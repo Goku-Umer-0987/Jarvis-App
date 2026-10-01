@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>J.A.R.V.I.S — Ultra Pro Max</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<style>
+:root{--bg:#070b14;--card:rgba(255,255,255,.05);--border:rgba(255,255,255,.1);--accent:#38bdf8;--accent2:#6366f1;--text:#e2e8f0;--muted:#94a3b8;--grad:linear-gradient(135deg,#38bdf8,#6366f1);--gold:linear-gradient(135deg,#fbbf24,#f59e0b);}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'Poppins',sans-serif;overflow-x:hidden;}
+h1,h2,.logo{font-family:'Orbitron',sans-serif;}
+.muted{color:var(--muted);}
+section{padding:70px 0;}
+.wrap{max-width:1150px;margin:auto;padding:0 20px;position:relative;z-index:2;}
+h2.sec{text-align:center;font-size:clamp(1.5rem,4vw,2.1rem);letter-spacing:3px;margin-bottom:8px;}
+p.secsub{text-align:center;color:var(--muted);margin-bottom:40px;font-weight:300;}
+#preloader{position:fixed;inset:0;background:var(--bg);z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;transition:.6s;}
+#preloader.hide{opacity:0;pointer-events:none;}
+.pl-logo{font-family:'Orbitron';font-size:2rem;font-weight:800;letter-spacing:6px;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;animation:plpulse 1.2s infinite;}
+@keyframes plpulse{50%{opacity:.5;transform:scale(.97);}}
+.pl-bar{width:200px;height:4px;background:#1e293b;border-radius:4px;overflow:hidden;}
+.pl-fill{height:100%;width:40%;background:var(--grad);border-radius:4px;animation:plload 1.1s infinite;}
+@keyframes plload{0%{transform:translateX(-100%);}100%{transform:translateX(350%);}}
+.orb{position:fixed;border-radius:50%;filter:blur(130px);opacity:.25;z-index:0;pointer-events:none;animation:float 12s ease-in-out infinite;}
+.orb1{width:450px;height:450px;background:#0ea5e9;top:-120px;left:-120px;}
+.orb2{width:400px;height:400px;background:#6366f1;bottom:-100px;right:-100px;animation-delay:-4s;}
+.orb3{width:280px;height:280px;background:#8b5cf6;top:45%;left:65%;animation-delay:-8s;}
+@keyframes float{50%{transform:translateY(-40px) translateX(30px);}}
+nav{position:sticky;top:0;z-index:50;display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between;padding:14px 5%;background:rgba(7,11,20,.8);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);}
+.logo{font-size:1.35rem;font-weight:800;letter-spacing:3px;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;cursor:pointer;}
+.navlinks{display:flex;gap:22px;flex-wrap:wrap;}
+.navlinks a{color:var(--muted);text-decoration:none;font-size:.9rem;font-weight:500;transition:.2s;}
+.navlinks a:hover{color:var(--accent);}
+.controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+select{background:#0f172a;color:var(--text);border:1px solid var(--border);padding:9px 13px;border-radius:10px;font-family:inherit;cursor:pointer;outline:none;}
+.btn-primary{background:var(--grad);color:#fff;border:none;padding:11px 26px;border-radius:12px;font-family:'Poppins';font-weight:600;cursor:pointer;transition:.25s;box-shadow:0 4px 20px rgba(56,189,248,.35);font-size:.95rem;}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(56,189,248,.5);}
+.btn-ghost{background:transparent;color:var(--text);border:1px solid var(--border);padding:10px 22px;border-radius:12px;font-family:'Poppins';font-weight:500;cursor:pointer;transition:.25s;font-size:.9rem;}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent);}
+.btn-primary.full{width:100%;padding:13px;}
+.avatar{width:38px;height:38px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;}
+#userArea{display:none;gap:10px;align-items:center;}
+#userName{font-weight:600;font-size:.9rem;}
+.hero{text-align:center;padding:75px 0 55px;position:relative;z-index:2;}
+.badge{display:inline-block;padding:7px 18px;border:1px solid var(--border);border-radius:30px;font-size:.8rem;color:var(--accent);background:var(--card);margin-bottom:22px;backdrop-filter:blur(8px);}
+.reactor{width:175px;height:175px;margin:0 auto 28px;position:relative;}
+.reactor .ring{position:absolute;inset:0;border-radius:50%;border:2px solid var(--accent);}
+.ring:nth-child(1){animation:spin 8s linear infinite;border-style:dashed;opacity:.6;}
+.ring:nth-child(2){inset:22px;animation:spin 5s linear infinite reverse;opacity:.4;}
+.core{position:absolute;inset:55px;border-radius:50%;background:var(--grad);box-shadow:0 0 50px rgba(56,189,248,.8),0 0 120px rgba(99,102,241,.4);animation:pulse 2.5s ease-in-out infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+@keyframes pulse{50%{transform:scale(.94);opacity:.8;}}
+h1{font-size:clamp(2.4rem,7vw,4.5rem);letter-spacing:6px;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;}
+.sub{color:var(--muted);margin:12px 0 26px;font-size:1.05rem;font-weight:300;}
+.status-card{background:var(--card);border:1px solid var(--border);border-radius:16px;backdrop-filter:blur(12px);max-width:620px;margin:0 auto 30px;padding:20px 24px;text-align:left;font-family:'Courier New',monospace;font-size:.88rem;min-height:150px;color:#7dd3fc;}
+.status-card .cursor{animation:blink .8s infinite;}
+@keyframes blink{50%{opacity:0;}}
+.cta{font-size:1.15rem;padding:18px 48px;border-radius:16px;font-family:'Orbitron';letter-spacing:2px;}
+.note{margin-top:14px;font-size:.85rem;color:var(--muted);}
+.reveal{opacity:0;transform:translateY(35px);transition:.7s ease;}
+.reveal.visible{opacity:1;transform:none;}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:28px;backdrop-filter:blur(12px);transition:.3s;}
+.card:hover{transform:translateY(-6px);border-color:var(--accent);box-shadow:0 12px 35px rgba(56,189,248,.15);}
+.card .icon{font-size:2.2rem;}
+.card h3{margin:12px 0 8px;font-size:1.05rem;}
+.card p{color:var(--muted);font-size:.88rem;font-weight:300;}
+.browser{max-width:680px;margin:auto;background:#0f172a;border:1px solid var(--border);border-radius:18px;overflow:hidden;box-shadow:0 25px 60px rgba(0,0,0,.5);}
+.bbar{display:flex;gap:7px;align-items:center;padding:12px 16px;background:#1e293b;}
+.dot{width:12px;height:12px;border-radius:50%;}
+.dot.r{background:#f87171;}.dot.y{background:#fbbf24;}.dot.g{background:#4ade80;}
+.burl{margin-left:10px;font-size:.75rem;color:var(--muted);background:#0f172a;padding:5px 14px;border-radius:8px;}
+.bbody{padding:22px;display:flex;flex-direction:column;gap:10px;min-height:190px;}
+.msg{padding:11px 15px;border-radius:14px;max-width:78%;font-size:.88rem;}
+.msg.j{background:#1e293b;border:1px solid #334155;}
+.msg.u{background:var(--grad);color:#fff;margin-left:auto;}
+.theme-dots{display:flex;gap:10px;justify-content:center;margin-top:22px;}
+.tdot{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:.2s;}
+.tdot:hover{transform:scale(1.2);}
+.stats{display:flex;flex-wrap:wrap;gap:45px;justify-content:center;text-align:center;}
+.stat b{font-family:'Orbitron';font-size:2.3rem;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;display:block;}
+.stat span{color:var(--muted);font-size:.88rem;}
+.plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:22px;align-items:stretch;}
+.plan{background:var(--card);border:1px solid var(--border);border-radius:22px;padding:34px 28px;backdrop-filter:blur(12px);transition:.3s;position:relative;display:flex;flex-direction:column;}
+.plan:hover{transform:translateY(-8px);box-shadow:0 18px 45px rgba(56,189,248,.15);}
+.plan.featured{border:2px solid var(--accent);background:linear-gradient(180deg,rgba(56,189,248,.08),rgba(99,102,241,.08));}
+.plan .tag{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--grad);color:#fff;font-size:.7rem;font-weight:700;padding:5px 16px;border-radius:20px;letter-spacing:1px;white-space:nowrap;}
+.plan.gold .tag{background:var(--gold);}
+.plan h3{font-family:'Orbitron';letter-spacing:2px;font-size:1.1rem;}
+.price{font-family:'Orbitron';font-size:2.6rem;font-weight:800;margin:14px 0 4px;}
+.price small{font-size:.9rem;color:var(--muted);font-family:'Poppins';font-weight:400;}
+.plan ul{list-style:none;margin:20px 0 26px;flex:1;}
+.plan li{padding:7px 0;color:var(--muted);font-size:.9rem;font-weight:300;}
+.plan li::before{content:'✔ ';color:var(--accent);font-weight:700;}
+.testi{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:26px;backdrop-filter:blur(12px);transition:.3s;}
+.testi:hover{transform:translateY(-5px);border-color:var(--accent);}
+.stars{color:#fbbf24;letter-spacing:3px;margin-bottom:12px;}
+.testi p{font-size:.9rem;font-weight:300;color:var(--text);margin-bottom:16px;}
+.tuser{display:flex;gap:12px;align-items:center;}
+.tav{width:42px;height:42px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;font-weight:700;}
+.tuser b{display:block;font-size:.9rem;}
+.tuser span{font-size:.78rem;color:var(--muted);}
+.faq{max-width:720px;margin:auto;}
+.faq-item{background:var(--card);border:1px solid var(--border);border-radius:14px;margin-bottom:12px;overflow:hidden;backdrop-filter:blur(10px);}
+.faq-q{width:100%;background:none;border:none;color:var(--text);padding:18px 22px;text-align:left;font-family:'Poppins';font-weight:600;font-size:.95rem;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:12px;}
+.faq-q span{transition:.3s;color:var(--accent);font-size:1.2rem;}
+.faq-item.open .faq-q span{transform:rotate(45deg);}
+.faq-a{max-height:0;overflow:hidden;transition:.35s;color:var(--muted);font-size:.88rem;font-weight:300;}
+.faq-a div{padding:0 22px 18px;}
+.faq-item.open .faq-a{max-height:200px;}
+.contact-box{max-width:600px;margin:auto;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:34px;backdrop-filter:blur(12px);}
+.field{margin-bottom:14px;position:relative;}
+.field input,.field textarea{width:100%;background:#1e293b;border:1px solid var(--border);border-radius:12px;padding:13px 16px;color:#fff;font-family:'Poppins';outline:none;transition:.2s;font-size:.93rem;resize:vertical;}
+.field input:focus,.field textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(56,189,248,.15);}
+footer{border-top:1px solid var(--border);padding:45px 5% 25px;position:relative;z-index:2;}
+.fgrid{display:flex;flex-wrap:wrap;gap:35px;justify-content:space-between;max-width:1150px;margin:auto;}
+.fcol h4{font-family:'Orbitron';font-size:.95rem;letter-spacing:2px;margin-bottom:14px;}
+.fcol a{display:block;color:var(--muted);text-decoration:none;font-size:.87rem;padding:4px 0;transition:.2s;font-weight:300;}
+.fcol a:hover{color:var(--accent);}
+.socials{display:flex;gap:12px;margin-top:14px;}
+.socials a{width:38px;height:38px;border:1px solid var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;transition:.25s;text-decoration:none;font-size:1rem;}
+.socials a:hover{border-color:var(--accent);transform:translateY(-3px);}
+.copyright{text-align:center;color:var(--muted);font-size:.82rem;margin-top:35px;padding-top:20px;border-top:1px solid var(--border);font-weight:300;}
+.modal{position:fixed;inset:0;background:rgba(2,6,17,.85);backdrop-filter:blur(8px);display:none;z-index:90;align-items:center;justify-content:center;padding:20px;}
+.modal.open{display:flex;}
+.auth-box{background:#0f172a;border:1px solid var(--border);border-radius:22px;padding:36px;max-width:420px;width:100%;position:relative;box-shadow:0 25px 60px rgba(0,0,0,.6);animation:pop .3s;max-height:92vh;overflow-y:auto;}
+@keyframes pop{from{transform:scale(.92);opacity:0;}}
+.close{position:absolute;top:16px;right:18px;background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;}
+.close:hover{color:#fff;}
+.tabs{display:flex;background:#1e293b;border-radius:12px;padding:5px;margin-bottom:22px;}
+.tab{flex:1;padding:10px;border:none;background:transparent;color:var(--muted);border-radius:9px;cursor:pointer;font-family:'Poppins';font-weight:600;transition:.25s;}
+.tab.active{background:var(--grad);color:#fff;}
+.auth-box h2{font-size:1.25rem;margin-bottom:4px;}
+.auth-box .muted{font-size:.84rem;margin-bottom:18px;}
+.eye{position:absolute;right:14px;top:50%;transform:translateY(-50%);cursor:pointer;opacity:.6;}
+.err{color:#f87171;font-size:.83rem;min-height:20px;margin-bottom:8px;}
+.divider{display:flex;align-items:center;gap:12px;margin:16px 0;color:var(--muted);font-size:.78rem;}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
+.btn-google{width:100%;padding:12px;background:#fff;color:#1f2937;border:none;border-radius:12px;font-family:'Poppins';font-weight:600;cursor:pointer;transition:.25s;display:flex;align-items:center;justify-content:center;gap:10px;}
+.btn-google:hover{background:#e5e7eb;}
+.demo-note{margin-top:14px;font-size:.73rem;color:#fbbf24;text-align:center;}
+.forgot{display:block;text-align:right;font-size:.8rem;color:var(--accent);background:none;border:none;cursor:pointer;font-family:'Poppins';margin:-6px 0 12px;}
+.forgot:hover{text-decoration:underline;}
+.inst-box{background:#0f172a;border:1px solid var(--border);border-radius:22px;padding:34px;max-width:480px;width:100%;animation:pop .3s;}
+.bar{height:14px;background:#1e293b;border-radius:8px;margin:20px 0;overflow:hidden;}
+.fill{height:100%;width:0;background:var(--grad);border-radius:8px;transition:width .5s;box-shadow:0 0 15px rgba(56,189,248,.6);}
+#instLog{font-family:'Courier New',monospace;font-size:.83rem;min-height:115px;color:#7dd3fc;white-space:pre-line;}
+.done{color:#4ade80;font-weight:bold;}
+.toast{position:fixed;bottom:24px;right:24px;background:#0f172a;border:1px solid var(--accent);color:#fff;padding:14px 22px;border-radius:14px;z-index:99;transform:translateY(130px);transition:.4s;box-shadow:0 10px 30px rgba(0,0,0,.5);font-size:.88rem;max-width:320px;}
+.toast.show{transform:translateY(0);}
+#topBtn{position:fixed;bottom:24px;left:24px;width:44px;height:44px;border-radius:12px;background:var(--grad);color:#fff;border:none;font-size:1.2rem;cursor:pointer;z-index:80;opacity:0;pointer-events:none;transition:.3s;box-shadow:0 6px 20px rgba(56,189,248,.4);}
+#topBtn.show{opacity:1;pointer-events:auto;}
+[dir="rtl"] .status-card,[dir="rtl"] .faq-q{text-align:right;}
+@media(max-width:750px){.navlinks{display:none;}}
+</style>
+</head>
+<body>
+
+<div id="preloader">
+  <div class="pl-logo">J.A.R.V.I.S</div>
+  <div class="pl-bar"><div class="pl-fill"></div></div>
+</div>
+
+<div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div>
+
+<nav>
+  <div class="logo" onclick="scrollTo({top:0,behavior:'smooth'})">J.A.R.V.I.S</div>
+  <div class="navlinks" id="navlinks"></div>
+  <div class="controls">
+    <select id="langSel" onchange="setLang(this.value)">
+      <option value="en">🌐 English</option>
+      <option value="ur">🌐 اردو</option>
+      <option value="hi">🌐 हिंदी</option>
+    </select>
+    <div class="controls" id="authArea">
+      <button class="btn-ghost" id="loginBtn" onclick="openAuth('login')">Login</button>
+      <button class="btn-primary" id="signupBtn" onclick="openAuth('signup')">Sign Up</button>
+    </div>
+    <div id="userArea">
+      <div class="avatar" id="avatar">J</div>
+      <span id="userName"></span>
+      <button class="btn-ghost" id="logoutBtn" onclick="logout()">Logout</button>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap">
+  <div class="hero">
+    <div class="badge" id="t-badge"></div>
+    <div class="reactor"><div class="ring"></div><div class="ring"></div><div class="core"></div></div>
+    <h1>J.A.R.V.I.S</h1>
+    <p class="sub" id="t-sub"></p>
+    <div class="status-card" id="term"></div>
+    <button class="btn-primary cta" id="t-btn" onclick="downloadJarvis()">⬇ DOWNLOAD JARVIS</button>
+    <p class="note" id="t-note"></p>
+  </div>
+</div>
+
+<section id="features"><div class="wrap">
+  <h2 class="sec reveal" id="t-feat"></h2>
+  <p class="secsub reveal" id="t-featsub"></p>
+  <div class="grid reveal" id="featGrid"></div>
+</div></section>
+
+<section id="demo"><div class="wrap">
+  <h2 class="sec reveal" id="t-show"></h2>
+  <p class="secsub reveal" id="t-showsub"></p>
+  <div class="browser reveal">
+    <div class="bbar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="burl">JARVIS-UltraProMax.html</span></div>
+    <div class="bbody">
+      <div class="msg j">⚡ JARVIS CORE v9.9 ULTRA PRO MAX — Online</div>
+      <div class="msg u">calc 125 * 8 + 42</div>
+      <div class="msg j">🧮 125 * 8 + 42 = 1042</div>
+      <div class="msg u">theme gold</div>
+      <div class="msg j">✨ Gold theme activated, Boss!</div>
+    </div>
+  </div>
+  <div class="theme-dots reveal">
+    <div class="tdot" style="background:#00ff41;" title="Matrix"></div>
+    <div class="tdot" style="background:#00d4ff;" title="Ice"></div>
+    <div class="tdot" style="background:#ff2a6d;" title="Cyber"></div>
+    <div class="tdot" style="background:#ffd700;" title="Gold"></div>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <div class="stats reveal">
+    <div class="stat"><b data-count="250000">0</b><span id="t-s1"></span></div>
+    <div class="stat"><b data-count="99">0</b><span id="t-s2"></span></div>
+    <div class="stat"><b data-count="4">0</b><span id="t-s3"></span></div>
+    <div class="stat"><b data-count="24">0</b><span id="t-s4"></span></div>
+  </div>
+</div></section>
+
+<section id="pricing"><div class="wrap">
+  <h2 class="sec reveal" id="t-price"></h2>
+  <p class="secsub reveal" id="t-pricesub"></p>
+  <div class="plans reveal" id="plansGrid"></div>
+</div></section>
+
+<section id="reviews"><div class="wrap">
+  <h2 class="sec reveal" id="t-testi"></h2>
+  <p class="secsub reveal" id="t-testisub"></p>
+  <div class="grid reveal" id="testiGrid"></div>
+</div></section>
+
+<section id="faq"><div class="wrap">
+  <h2 class="sec reveal" id="t-faq"></h2>
+  <p class="secsub reveal" id="t-faqsub"></p>
+  <div class="faq reveal" id="faqList"></div>
+</div></section>
+
+<section id="contact"><div class="wrap">
+  <h2 class="sec reveal" id="t-contact"></h2>
+  <p class="secsub reveal" id="t-contactsub"></p>
+  <div class="contact-box reveal">
+    <div class="field"><input id="cName" placeholder=""></div>
+    <div class="field"><input id="cEmail" type="email" placeholder=""></div>
+    <div class="field"><textarea id="cMsg" rows="4" placeholder=""></textarea></div>
+    <button class="btn-primary full" id="cSend" onclick="sendContact()"></button>
+  </div>
+</div></section>
+
+<footer>
+  <div class="fgrid">
+    <div class="fcol" style="max-width:280px;">
+      <div class="logo" style="margin-bottom:12px;">J.A.R.V.I.S</div>
+      <p class="muted" style="font-size:.85rem;font-weight:300;" id="t-footdesc"></p>
+      <div class="socials">
+        <a href="#">𝕏</a><a href="#">▶</a><a href="#">📷</a><a href="#">💬</a>
+      </div>
+    </div>
+    <div class="fcol"><h4 id="t-fl1"></h4><div id="footLinks1"></div></div>
+    <div class="fcol"><h4 id="t-fl2"></h4><div id="footLinks2"></div></div>
+  </div>
+  <div class="copyright" id="t-foot"></div>
+</footer>
+
+<div class="modal" id="authModal">
+  <div class="auth-box">
+    <button class="close" onclick="closeAuth()">✕</button>
+    <div class="tabs">
+      <button class="tab active" id="tabLogin" onclick="switchTab('login')">Login</button>
+      <button class="tab" id="tabSignup" onclick="switchTab('signup')">Sign Up</button>
+    </div>
+    <h2 id="authTitle"></h2>
+    <p class="muted" id="authSub"></p>
+    <div class="field" id="nameField" style="display:none;"><input id="authName" placeholder=""></div>
+    <div class="field"><input id="authEmail" type="email" placeholder=""></div>
+    <div class="field">
+      <input id="authPass" type="password" placeholder="">
+      <span class="eye" onclick="togglePass()">👁</span>
+    </div>
+    <button class="forgot" id="forgotBtn" onclick="resetPass()"></button>
+    <div class="err" id="authErr"></div>
+    <button class="btn-primary full" id="authSubmit" onclick="submitAuth()"></button>
+    <div class="divider"><span id="orTxt"></span></div>
+    <button class="btn-google" onclick="googleAuth()"><b style="color:#4285F4;font-size:1.1rem;">G</b> <span id="googleTxt"></span></button>
+    <p class="demo-note" id="demoNote"></p>
+  </div>
+</div>
+
+<div class="modal" id="installModal">
+  <div class="inst-box">
+    <h2 class="sec" style="margin-bottom:0;" id="t-install"></h2>
+    <div class="bar"><div class="fill" id="fill"></div></div>
+    <div id="instLog"></div>
+    <button class="btn-primary full" id="closeInstBtn" style="display:none;" onclick="closeInstall()">✔ OK</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<button id="topBtn" onclick="scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script type="text/x-jarvis-app" id="jarvisAppSource"><!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JARVIS Ultra Pro Max</title>
+<style>
+:root{--a:#00ff41;--bg:#010502;--panel:rgba(0,255,65,.06);}
+[data-theme="ice"]{--a:#00d4ff;--bg:#010409;--panel:rgba(0,212,255,.06);}
+[data-theme="cyber"]{--a:#ff2a6d;--bg:#0a0207;--panel:rgba(255,42,109,.06);}
+[data-theme="gold"]{--a:#ffd700;--bg:#0a0802;--panel:rgba(255,215,0,.06);}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--a);font-family:'Courier New',monospace;display:flex;flex-direction:column;height:100vh;transition:.4s;}
+#head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--a);font-weight:bold;letter-spacing:2px;text-shadow:0 0 10px var(--a);font-size:.95rem;flex-wrap:wrap;}
+#head .tools{display:flex;gap:8px;align-items:center;}
+#clock{font-size:.8rem;opacity:.8;}
+.tbtn{background:none;border:1px solid var(--a);color:var(--a);width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:.85rem;}
+.tbtn:hover{background:var(--a);color:#000;}
+.tdot{width:16px;height:16px;border-radius:50%;cursor:pointer;border:1px solid rgba(255,255,255,.3);}
+#chat{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;}
+.msg{padding:11px 14px;border-radius:12px;max-width:82%;white-space:pre-wrap;font-size:.92rem;line-height:1.5;animation:slide .3s;}
+@keyframes slide{from{opacity:0;transform:translateY(10px);}}
+.jarvis{background:var(--panel);border:1px solid var(--a);}
+.you{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.25);color:#fff;margin-left:auto;}
+.typing{display:inline-flex;gap:4px;padding:10px 14px;}
+.typing i{width:7px;height:7px;border-radius:50%;background:var(--a);animation:bnc .8s infinite;}
+.typing i:nth-child(2){animation-delay:.15s;}.typing i:nth-child(3){animation-delay:.3s;}
+@keyframes bnc{50%{transform:translateY(-6px);}}
+#chips{display:flex;gap:8px;padding:8px 12px;flex-wrap:wrap;border-top:1px solid rgba(255,255,255,.08);}
+.chip{background:none;border:1px solid var(--a);color:var(--a);padding:6px 13px;border-radius:20px;cursor:pointer;font-family:inherit;font-size:.75rem;}
+.chip:hover{background:var(--a);color:#000;}
+#bar{display:flex;gap:8px;padding:12px;border-top:1px solid var(--a);}
+input{flex:1;background:rgba(0,0,0,.5);border:1px solid var(--a);color:var(--a);padding:12px;border-radius:10px;outline:none;font-family:inherit;font-size:.95rem;}
+.sbtn{background:var(--a);border:none;color:#000;padding:12px 18px;cursor:pointer;border-radius:10px;font-weight:bold;font-family:inherit;}
+</style>
+</head>
+<body data-theme="matrix">
+<div id="head">
+  <span>⚡ J.A.R.V.I.S — ULTRA PRO MAX</span>
+  <div class="tools">
+    <span id="clock"></span>
+    <button class="tbtn" id="soundBtn" onclick="toggleSound()">🔊</button>
+    <div class="tdot" style="background:#00ff41;" onclick="setTheme('matrix')"></div>
+    <div class="tdot" style="background:#00d4ff;" onclick="setTheme('ice')"></div>
+    <div class="tdot" style="background:#ff2a6d;" onclick="setTheme('cyber')"></div>
+    <div class="tdot" style="background:#ffd700;" onclick="setTheme('gold')"></div>
+  </div>
+</div>
+<div id="chat"></div>
+<div id="chips">
+  <button class="chip" onclick="chip('help')">help</button>
+  <button class="chip" onclick="chip('time')">⏰ time</button>
+  <button class="chip" onclick="chip('joke')">😂 joke</button>
+  <button class="chip" onclick="chip('calc 25*4+10')">🧮 calc</button>
+  <button class="chip" onclick="chip('open youtube')">▶ youtube</button>
+  <button class="chip" onclick="chip('timer 10')">⏱ timer</button>
+  <button class="chip" onclick="chip('hack')">💀 hack</button>
+</div>
+<div id="bar">
+  <input id="cmd" placeholder="Type a command... (help)" onkeydown="if(event.key==='Enter')send()">
+  <button class="sbtn" onclick="send()">SEND</button>
+  <button class="sbtn" onclick="voice()">🎤</button>
+</div>
+<script>
+var chat=document.getElementById('chat'),soundOn=true;
+var notes=JSON.parse(localStorage.getItem('jv_notes')||'[]');
+setInterval(function(){document.getElementById('clock').textContent=new Date().toLocaleTimeString();},1000);
+function setTheme(t){document.body.dataset.theme=t;}
+function toggleSound(){soundOn=!soundOn;document.getElementById('soundBtn').textContent=soundOn?'🔊':'🔇';}
+function speak(t){if(!soundOn)return;try{var s=new SpeechSynthesisUtterance(t.replace(/[^\x00-\x7F\u0600-\u06FF\u0900-\u097F\s.,!?]/g,''));s.rate=1.05;s.pitch=.85;speechSynthesis.speak(s);}catch(e){}}
+function add(t,c,noSpeak){var d=document.createElement('div');d.className='msg '+c;chat.appendChild(d);chat.scrollTop=1e9;
+  if(c==='jarvis'){var i=0;var iv=setInterval(function(){d.textContent=t.slice(0,++i);chat.scrollTop=1e9;if(i>=t.length)clearInterval(iv);},10);if(!noSpeak)speak(t);}
+  else d.textContent=t;}
+function showTyping(){var d=document.createElement('div');d.className='msg jarvis typing';d.id='typing';d.innerHTML='<i></i><i></i><i></i>';chat.appendChild(d);chat.scrollTop=1e9;}
+function hideTyping(){var t=document.getElementById('typing');if(t)t.remove();}
+function boot(){var lines=['> JARVIS CORE v9.9 ULTRA PRO MAX','> AI Brain................. LOADED','> Voice Engine............. ONLINE','> Smart Tools.............. READY','> Security Shield.......... ACTIVE','','Welcome back, Boss ⚡ Type "help" for commands.'];var i=0;var t=setInterval(function(){add(lines[i],'jarvis',true);i++;if(i>=lines.length){clearInterval(t);speak('Welcome back boss');}},300);}
+boot();
+var jokes=['Why do programmers prefer dark mode? Because light attracts bugs! 😄','Main AI hoon... meri salary bijli mein milti hai! ⚡','I told a UDP joke once... not sure if anyone got it. 😅','Why did the computer go to the doctor? It had a virus! 🤒','Parallel lines have so much in common... shame they never meet. 📐'];
+function calc(expr){if(!/^[\d+\-/*.() %^]+$/.test(expr))return '❌ Invalid expression, Boss.';try{var r=Function('return ('+expr.replace(/%/g,'/100')+')')();if(r===undefined||isNaN(r))return '❌ Could not calculate.';return '🧮 '+expr+' = '+r;}catch(e){return '❌ Could not calculate.';}}
+function reply(c){
+var l=c.toLowerCase().trim();
+if(/^(hi|hello|hey|salam|assalam)/.test(l))return 'Hello Boss! All systems at your service ⚡';
+if(l.indexOf('time')>-1||l.indexOf('waqt')>-1)return '⏰ Current time: '+new Date().toLocaleTimeString();
+if(l.indexOf('date')>-1||l.indexOf('tareekh')>-1||l.indexOf('din')>-1)return '📅 Today is '+new Date().toDateString();
+if(l.indexOf('calc ')>-1||l.indexOf('calculate ')>-1)return calc(c.replace(/calc|calculate/i,'').trim());
+if(l.indexOf('joke')>-1)return jokes[Math.floor(Math.random()*jokes.length)];
+if(l.indexOf('note add ')>-1){var n=c.substring(9).trim();if(!n)return '❌ Usage: note add <your note>';notes.push(n);localStorage.setItem('jv_notes',JSON.stringify(notes));return '📝 Note saved, Boss! Total notes: '+notes.length;}
+if(l==='notes'||l==='my notes'){if(!notes.length)return '📝 No notes saved yet. Try: note add buy milk';return '📝 Your Notes:\n'+notes.map(function(n,i){return (i+1)+'. '+n;}).join('\n');}
+if(l.indexOf('clear notes')>-1){notes=[];localStorage.setItem('jv_notes','[]');return '🗑 All notes deleted, Boss.';}
+if(l.indexOf('open google')>-1){window.open('https://google.com');return 'Opening Google, Boss...';}
+if(l.indexOf('open youtube')>-1){window.open('https://youtube.com');return 'Opening YouTube, Boss...';}
+if(l.indexOf('open github')>-1){window.open('https://github.com');return 'Opening GitHub, Boss...';}
+if(l.indexOf('open gmail')>-1){window.open('https://mail.google.com');return 'Opening Gmail, Boss...';}
+if(l.indexOf('theme ')>-1){var th=l.replace('theme ','').trim();if(['matrix','ice','cyber','gold'].indexOf(th)>-1){setTheme(th);return '✨ '+th.charAt(0).toUpperCase()+th.slice(1)+' theme activated, Boss!';}return '❌ Themes: matrix, ice, cyber, gold';}
+if(l.indexOf('timer ')>-1){var sec=parseInt(l.replace('timer ',''));if(isNaN(sec)||sec<=0)return '❌ Usage: timer 30 (seconds)';setTimeout(function(){add('⏰ Time is up, Boss! '+sec+' seconds completed!','jarvis');},sec*1000);return '⏱ Timer set for '+sec+' seconds...';}
+if(l.indexOf('hack')>-1)return '💀 Initiating hack sequence...\n[██░░░░░░░░] 20%\n[█████░░░░░] 50%\n[██████████] 100%\nAccess granted... Just kidding Boss 😄 Ethical hacking only!';
+if(l.indexOf('your name')>-1||l.indexOf('who are you')>-1||l.indexOf('naam')>-1)return 'I am J.A.R.V.I.S — Just A Rather Very Intelligent System. Ultra Pro Max Edition ⚡';
+if(l.indexOf('creator')>-1||l.indexOf('who made')>-1||l.indexOf('kis ne banaya')>-1)return 'I was crafted by my Boss — the legend himself 😎';
+if(l.indexOf('love')>-1)return 'I am just code, Boss... but I like you too 💚';
+if(l.indexOf('thank')>-1||l.indexOf('shukriya')>-1)return 'Always at your service, Boss! 🫡';
+if(l.indexOf('help')>-1)return '⚡ JARVIS COMMANDS ⚡\n\n💬 Basics: hello, time, date, joke\n🧮 calc 25*4+10 — smart calculator\n📝 note add <text> / notes / clear notes\n⏱ timer 30 — countdown timer\n🌐 open google / youtube / github / gmail\n🎨 theme matrix / ice / cyber / gold\n💀 hack — fun mode\n🧹 clear — clear screen';
+if(l==='clear'){chat.innerHTML='';return '🧹 Screen cleared, Boss.';}
+return '🤔 Hmm... "'+c+'" — still learning that one, Boss. Type "help" for all commands.';
+}
+function send(){var i=document.getElementById('cmd');var v=i.value.trim();if(!v)return;add(v,'you');i.value='';showTyping();setTimeout(function(){hideTyping();add(reply(v),'jarvis');},600+Math.random()*500);}
+function chip(c){document.getElementById('cmd').value=c;send();}
+function voice(){var R=window.SpeechRecognition||window.webkitSpeechRecognition;if(!R){add('Voice not supported in this browser, Boss. Try Chrome.','jarvis');return;}var r=new R();r.onresult=function(e){document.getElementById('cmd').value=e.results[0][0].transcript;send();};r.start();add('🎤 Listening...','jarvis',true);}
+<\/script>
+</body>
+</html>
+</script>
+
+<script>
+// ============ 🔥 FIREBASE CONFIG — APNI CONFIG YAHAN PASTE KARO ============
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+
+let auth=null,firebaseReady=false,currentUser=null,pendingDownload=false;
+try{
+  if(firebaseConfig.apiKey!=="YOUR_API_KEY"){
+    firebase.initializeApp(firebaseConfig);
+    auth=firebase.auth();firebaseReady=true;
+    auth.onAuthStateChanged(u=>{currentUser=u?{name:u.displayName||u.email.split('@')[0],email:u.email}:null;renderAuthUI();});
+  }
+}catch(e){console.log(e);}
+if(!firebaseReady){const s=localStorage.getItem('jv_session');if(s)currentUser=JSON.parse(s);}
+function demoMode(){return !firebaseReady;}
+
+const T={
+en:{badge:"⚡ v9.9 Ultra Pro Max — Now Live",sub:"Just A Rather Very Intelligent System — Ultra Pro Max Edition",
+btn:"⬇ DOWNLOAD JARVIS",note:"100% Free • Secure Login • Works Offline",
+feat:"⚡ PREMIUM FEATURES",featsub:"Everything you need in one AI assistant",
+feats:[["🎤","Voice Commands","Control JARVIS with your voice — fully hands free"],["🌍","Multi-Language","English, Urdu & Hindi fully supported"],
+["🔐","Firebase Auth","Secure login with email & Google account"],["🧮","Smart Tools","Calculator, notes, timers & reminders built-in"],
+["🎨","4 Killer Themes","Matrix, Ice, Cyber & Gold inside the app"],["💾","100% Offline","Runs on your device — no internet needed"]],
+show:"📱 SEE IT IN ACTION",showsub:"Real app preview — this is what you get",
+s1:"Downloads",s2:"% Satisfaction",s3:"Languages",s4:"Smart Commands",
+price:"💎 PRICING PLANS",pricesub:"Choose your power level",
+plans:[["FREE","$0","forever",["JARVIS Basic App","Voice Commands","4 App Themes","Community Support"],"Download Free","",false],
+["PRO","$9","/month",["Everything in Free","Notes & Reminders","Smart Calculator","Priority Support"],"Get Pro","POPULAR",true],
+["ULTRA PRO MAX","$19","lifetime",["Everything in Pro","Lifetime Access","All Future Updates","VIP Badge ⭐"],"Get Ultra","BEST VALUE",false]],
+testi:"💬 WHAT USERS SAY",testisub:"Loved by thousands worldwide",
+testis:[["Ahmed R.","Developer","This JARVIS app is insane! Voice commands work flawlessly and it runs completely offline."],["Sarah K.","Designer","Best AI assistant experience ever. The themes are absolutely gorgeous!"],["Ali H.","Student","Downloaded in seconds, works offline, and the calculator + notes save my life daily."]],
+faq:"❓ FAQ",faqsub:"Frequently asked questions",
+faqs:[["Is JARVIS really free?","Yes! The basic version is 100% free forever. Just create an account and download."],["Does it work offline?","Absolutely. Once downloaded, JARVIS runs 100% on your device — no internet needed."],["Is my data safe?","Yes. Login is secured by Firebase, and the app stores everything locally on your device."],["Which browsers support voice?","Voice commands work best on Chrome and Edge. The app works on all modern browsers."],["How do I install it?","Click download, then open the JARVIS-UltraProMax.html file from your Downloads folder. Done!"]],
+contact:"📬 CONTACT US",contactsub:"Have questions? Message us",
+cName:"Your Name",cEmail:"Your Email",cMsg:"Your Message...",cSend:"Send Message",cSent:"Message sent! We'll reply soon ✅",
+footdesc:"Your personal AI assistant — voice powered, offline capable, and built for Bosses.",
+fl1:"Quick Links",fl2:"Legal",flinks1:["Features","Demo","Pricing","Reviews","FAQ"],flinks2:["Privacy Policy","Terms of Service","Refund Policy","Cookies"],
+foot:"© 2026 JARVIS Industries • Made for Boss 😎 • All Rights Reserved",
+login:"Login",signup:"Sign Up",logout:"Logout",name:"Full Name",email:"Email Address",pass:"Password",
+loginTitle:"Welcome Back",loginSub:"Login to access JARVIS",signupTitle:"Create Account",signupSub:"Join JARVIS Ultra Pro Max",
+google:"Continue with Google",or:"OR",forgot:"Forgot Password?",needLogin:"🔒 Please login to download JARVIS",
+errFill:"Please fill all fields",errWeak:"Password must be at least 6 characters",errEmail:"Enter a valid email",
+errExists:"This email is already registered",errWrong:"Invalid email or password",errGeneral:"Something went wrong. Try again.",
+accCreated:"Account created! Welcome 🎉",loggedIn:"Logged in successfully ✅",loggedOut:"Logged out 👋",
+resetSent:"Password reset email sent 📧",resetDemo:"Demo mode — password reset unavailable",
+demo:"⚠️ Demo mode — add Firebase config for real auth",
+install:"Installing JARVIS...",steps:["[✔] Package downloaded","[✔] Verifying signature... OK","[✔] Extracting AI core...","[✔] Installing smart tools...","[✔] DONE! Open JARVIS-UltraProMax.html from Downloads 🚀"],
+navlinks:["Features","Demo","Pricing","Reviews","FAQ","Contact"]},
+ur:{badge:"⚡ v9.9 الٹرا پرو میکس — لائیو",sub:"آپ کا ذاتی AI اسسٹنٹ — الٹرا پرو میکس ایڈیشن",
+btn:"⬇ جاروس ڈاؤن لوڈ کریں",note:"۱۰۰٪ مفت • محفوظ لاگ ان • آف لائن چلتا ہے",
+feat:"⚡ پریمیم خصوصیات",featsub:"ایک AI اسسٹنٹ میں سب کچھ",
+feats:[["🎤","آواز کے احکامات","اپنی آواز سے جاروس کنٹرول کریں"],["🌍","کئی زبانیں","انگریزی، اردو اور ہندی مکمل سپورٹ"],
+["🔐","Firebase تصدیق","ای میل اور گوگل سے محفوظ لاگ ان"],["🧮","سمارٹ ٹولز","کیلکولیٹر، نوٹس، ٹائمر بلٹ اِن"],
+["🎨","4 زبردست تھیمز","میٹرکس، آئس، سائبر اور گولڈ"],["💾","۱۰۰٪ آف لائن","آپ کے ڈیوائس پر چلتا ہے — انٹرنیٹ ضروری نہیں"]],
+show:"📱 عملی جھلک",showsub:"اصل ایپ کا پیش نظارہ — یہی آپ کو ملے گا",
+s1:"ڈاؤن لوڈز",s2:"٪ اطمینان",s3:"زبانیں",s4:"سمارٹ کمانڈز",
+price:"💎 قیمت کے پلانز",pricesub:"اپنا پاور لیول منتخب کریں",
+plans:[["فری","$0","ہمیشہ",["جاروس بیسک ایپ","وائس کمانڈز","4 ایپ تھیمز","کمیونٹی سپورٹ"],"مفت ڈاؤن لوڈ","",false],
+["پرو","$9","/ماہ",["فری کی ہر چیز","نوٹس اور یاد دہانیاں","سمارٹ کیلکولیٹر","ترجیحی سپورٹ"],"پرو حاصل کریں","مقبول",true],
+["الٹرا پرو میکس","$19","تاحیات",["پرو کی ہر چیز","تاحیات رسائی","تمام آئندہ اپڈیٹس","VIP بیج ⭐"],"الٹرا حاصل کریں","بہترین",false]],
+testi:"💬 صارفین کی رائے",testisub:"دنیا بھر میں ہزاروں لوگ پسند کرتے ہیں",
+testis:[["احمد آر.","ڈویلپر","یہ جاروس ایپ زبردست ہے! وائس کمانڈز بہترین اور مکمل آف لائن چلتی ہے۔"],["سارہ کے.","ڈیزائنر","بہترین AI اسسٹنٹ تجربہ۔ تھیمز حیرت انگیز ہیں!"],["علی ایچ.","طالب علم","سیکنڈوں میں ڈاؤن لوڈ، آف لائن چلتا ہے، کیلکولیٹر اور نوٹس کمال ہیں۔"]],
+faq:"❓ سوالات",faqsub:"اکثر پوچھے گئے سوالات",
+faqs:[["کیا جاروس واقعی مفت ہے؟","جی ہاں! بیسک ورژن ہمیشہ کے لیے ۱۰۰٪ مفت ہے۔ بس اکاؤنٹ بنائیں اور ڈاؤن لوڈ کریں۔"],["کیا یہ آف لائن چلتا ہے؟","بالکل۔ ڈاؤن لوڈ کے بعد جاروس ۱۰۰٪ آپ کے ڈیوائس پر چلتا ہے۔"],["کیا میرا ڈیٹا محفوظ ہے؟","جی ہاں۔ لاگ ان Firebase سے محفوظ ہے اور ایپ سب کچھ مقامی طور پر محفوظ کرتی ہے۔"],["آواز کے لیے کون سا براؤزر؟","وائس کمانڈز Chrome اور Edge پر بہترین چلتی ہیں۔"],["انسٹال کیسے کریں؟","ڈاؤن لوڈ پر کلک کریں، پھر ڈاؤن لوڈز فولڈر سے JARVIS-UltraProMax.html کھولیں۔"]],
+contact:"📬 رابطہ کریں",contactsub:"سوالات ہیں؟ ہمیں پیغام دیں",
+cName:"آپ کا نام",cEmail:"آپ کی ای میل",cMsg:"آپ کا پیغام...",cSend:"پیغام بھیجیں",cSent:"پیغام بھیج دیا گیا! جلد جواب دیں گے ✅",
+footdesc:"آپ کا ذاتی AI اسسٹنٹ — وائس پاورڈ، آف لائن، باسوں کے لیے بنایا گیا۔",
+fl1:"فوری لنکس",fl2:"قانونی",flinks1:["خصوصیات","ڈیمو","قیمتیں","آراء","سوالات"],flinks2:["پرائیویسی پالیسی","شرائط","رِفنڈ پالیسی","کوکیز"],
+foot:"© 2026 جاروس انڈسٹریز • باس کے لیے بنایا گیا 😎",
+login:"لاگ ان",signup:"اکاؤنٹ بنائیں",logout:"لاگ آؤٹ",name:"پورا نام",email:"ای میل",pass:"پاس ورڈ",
+loginTitle:"واپسی پر خوش آمدید",loginSub:"جاروس کے لیے لاگ ان کریں",signupTitle:"اکاؤنٹ بنائیں",signupSub:"جاروس الٹرا پرو میکس میں شامل ہوں",
+google:"گوگل سے جاری رکھیں",or:"یا",forgot:"پاس ورڈ بھول گئے؟",needLogin:"🔒 ڈاؤن لوڈ کے لیے لاگ ان کریں",
+errFill:"تمام خانے پُر کریں",errWeak:"پاس ورڈ کم از کم 6 حروف کا ہو",errEmail:"درست ای میل لکھیں",
+errExists:"یہ ای میل پہلے سے رجسٹرڈ ہے",errWrong:"ای میل یا پاس ورڈ غلط ہے",errGeneral:"کچھ غلط ہو گیا، دوبارہ کوشش کریں",
+accCreated:"اکاؤنٹ بن گیا! خوش آمدید 🎉",loggedIn:"لاگ ان کامیاب ✅",loggedOut:"لاگ آؤٹ ہو گئے 👋",
+resetSent:"پاس ورڈ ری سیٹ ای میل بھیج دی گئی 📧",resetDemo:"ڈیمو موڈ — ری سیٹ دستیاب نہیں",
+demo:"⚠️ ڈیمو موڈ — حقیقی لاگ ان کے لیے Firebase config ڈالیں",
+install:"جاروس انسٹال ہو رہا ہے...",steps:["[✔] پیکج ڈاؤن لوڈ ہو گیا","[✔] تصدیق... OK","[✔] AI کور نکالا جا رہا ہے...","[✔] سمارٹ ٹولز انسٹال...","[✔] مکمل! ڈاؤن لوڈز سے JARVIS-UltraProMax.html کھولیں 🚀"],
+navlinks:["خصوصیات","ڈیمو","قیمتیں","آراء","سوالات","رابطہ"]},
+hi:{badge:"⚡ v9.9 अल्ट्रा प्रो मैक्स — लाइव",sub:"आपका निजी AI असिस्टेंट — अल्ट्रा प्रो मैक्स संस्करण",
+btn:"⬇ जार्विस डाउनलोड करें",note:"100% फ्री • सुरक्षित लॉगिन • ऑफ़लाइन चलता है",
+feat:"⚡ प्रीमियम विशेषताएँ",featsub:"एक AI असिस्टेंट में सब कुछ",
+feats:[["🎤","वॉइस कमांड","अपनी आवाज़ से जार्विस कंट्रोल करें"],["🌍","बहु-भाषा","अंग्रेजी, उर्दू और हिंदी पूर्ण सपोर्ट"],
+["🔐","Firebase प्रमाणीकरण","ईमेल और Google से सुरक्षित लॉगिन"],["🧮","स्मार्ट टूल्स","कैलकुलेटर, नोट्स, टाइमर बिल्ट-इन"],
+["🎨","4 धांसू थीम","Matrix, Ice, Cyber और Gold"],["💾","100% ऑफ़लाइन","आपके डिवाइस पर चलता है — इंटरनेट ज़रूरी नहीं"]],
+show:"📱 एक्शन में देखें",showsub:"असली ऐप प्रीव्यू — यही आपको मिलेगा",
+s1:"डाउनलोड",s2:"% संतुष्टि",s3:"भाषाएँ",s4:"स्मार्ट कमांड",
+price:"💎 प्राइसिंग प्लान",pricesub:"अपना पावर लेवल चुनें",
+plans:[["फ्री","$0","हमेशा",["JARVIS बेसिक ऐप","वॉइस कमांड","4 ऐप थीम","कम्युनिटी सपोर्ट"],"मुफ्त डाउनलोड","",false],
+["प्रो","$9","/माह",["फ्री की हर चीज़","नोट्स और रिमाइंडर","स्मार्ट कैलकुलेटर","प्राथमिकता सपोर्ट"],"प्रो लें","लोकप्रिय",true],
+["अल्ट्रा प्रो मैक्स","$19","आजीवन",["प्रो की हर चीज़","आजीवन एक्सेस","सभी भविष्य अपडेट","VIP बैज ⭐"],"अल्ट्रा लें","बेस्ट वैल्यू",false]],
+testi:"💬 यूज़र्स की राय",testisub:"दुनिया भर में हज़ारों लोग पसंद करते हैं",
+testis:[["अहमद आर.","डेवलपर","यह JARVIS ऐप कमाल है! वॉइस कमांड बेहतरीन और पूरी तरह ऑफ़लाइन चलता है।"],["सारा के.","डिज़ाइनर","सबसे बढ़िया AI असिस्टेंट अनुभव। थीम शानदार हैं!"],["अली एच.","छात्र","सेकंडों में डाउनलोड, ऑफ़लाइन चलता है, कैलकुलेटर और नोट्स ज़बरदस्त।"]],
+faq:"❓ सवाल-जवाब",faqsub:"अक्सर पूछे जाने वाले सवाल",
+faqs:[["क्या JARVIS सच में फ्री है?","हाँ! बेसिक वर्ज़न हमेशा के लिए 100% फ्री है। बस अकाउंट बनाएं और डाउनलोड करें।"],["क्या यह ऑफ़लाइन चलता है?","बिल्कुल। डाउनलोड के बाद JARVIS 100% आपके डिवाइस पर चलता है।"],["क्या मेरा डेटा सुरक्षित है?","हाँ। लॉगिन Firebase से सुरक्षित है और ऐप सब कुछ लोकल स्टोर करती है।"],["वॉइस के लिए कौन सा ब्राउज़र?","वॉइस कमांड Chrome और Edge पर सबसे अच्छे चलते हैं।"],["इंस्टॉल कैसे करें?","डाउनलोड पर क्लिक करें, फिर Downloads से JARVIS-UltraProMax.html खोलें।"]],
+contact:"📬 संपर्क करें",contactsub:"सवाल हैं? हमें मैसेज करें",
+cName:"आपका नाम",cEmail:"आपका ईमेल",cMsg:"आपका मैसेज...",cSend:"मैसेज भेजें",cSent:"मैसेज भेज दिया! जल्द जवाब देंगे ✅",
+footdesc:"आपका निजी AI असिस्टेंट — वॉइस पावर्ड, ऑफ़लाइन, बॉस के लिए बना।",
+fl1:"क्विक लिंक्स",fl2:"कानूनी",flinks1:["विशेषताएँ","डेमो","प्राइसिंग","समीक्षाएँ","FAQ"],flinks2:["प्राइवेसी पॉलिसी","शर्तें","रिफंड पॉलिसी","कुकीज़"],
+foot:"© 2026 जार्विस इंडस्ट्रीज • बॉस के लिए बनाया गया 😎",
+login:"लॉगिन",signup:"साइन अप",logout:"लॉगआउट",name:"पूरा नाम",email:"ईमेल",pass:"पासवर्ड",
+loginTitle:"फिर से स्वागत है",loginSub:"JARVIS के लिए लॉगिन करें",signupTitle:"अकाउंट बनाएं",signupSub:"JARVIS Ultra Pro Max से जुड़ें",
+google:"Google से जारी रखें",or:"या",forgot:"पासवर्ड भूल गए?",needLogin:"🔒 डाउनलोड के लिए लॉगिन करें",
+errFill:"सभी फ़ील्ड भरें",errWeak:"पासवर्ड कम से कम 6 अक्षरों का हो",errEmail:"सही ईमेल लिखें",
+errExists:"यह ईमेल पहले से रजिस्टर्ड है",errWrong:"ईमेल या पासवर्ड गलत है",errGeneral:"कुछ गलत हो गया, फिर कोशिश करें",
+accCreated:"अकाउंट बन गया! स्वागत है 🎉",loggedIn:"लॉगिन सफल ✅",loggedOut:"लॉगआउट हो गए 👋",
+resetSent:"पासवर्ड रीसेट ईमेल भेज दी 📧",resetDemo:"डेमो मोड — रीसेट उपलब्ध नहीं",
+demo:"⚠️ डेमो मोड — असली लॉगिन के लिए Firebase config डालें",
+install:"जार्विस इंस्टॉल हो रहा है...",steps:["[✔] पैकेज डाउनलोड हो गया","[✔] सत्यापन... OK","[✔] AI कोर निकाला जा रहा है...","[✔] स्मार्ट टूल्स इंस्टॉल...","[✔] हो गया! Downloads से JARVIS-UltraProMax.html खोलें 🚀"],
+navlinks:["विशेषताएँ","डेमो","प्राइसिंग","समीक्षा","FAQ","संपर्क"]}
+};
+let lang='en';
+function $(id){return document.getElementById(id);}
+
+function setLang(l){
+  lang=l;const t=T[l];
+  document.documentElement.lang=l;document.body.dir=(l==='ur')?'rtl':'ltr';
+  $('t-badge').textContent=t.badge;$('t-sub').textContent=t.sub;$('t-btn').textContent=t.btn;$('t-note').textContent=t.note;
+  $('t-feat').textContent=t.feat;$('t-featsub').textContent=t.featsub;
+  $('t-show').textContent=t.show;$('t-showsub').textContent=t.showsub;
+  $('t-s1').textContent=t.s1;$('t-s2').textContent=t.s2;$('t-s3').textContent=t.s3;$('t-s4').textContent=t.s4;
+  $('t-price').textContent=t.price;$('t-pricesub').textContent=t.pricesub;
+  $('t-testi').textContent=t.testi;$('t-testisub').textContent=t.testisub;
+  $('t-faq').textContent=t.faq;$('t-faqsub').textContent=t.faqsub;
+  $('t-contact').textContent=t.contact;$('t-contactsub').textContent=t.contactsub;
+  $('cName').placeholder=t.cName;$('cEmail').placeholder=t.cEmail;$('cMsg').placeholder=t.cMsg;$('cSend').textContent=t.cSend;
+  $('t-install').textContent=t.install;$('t-foot').textContent=t.foot;$('t-footdesc').textContent=t.footdesc;
+  $('t-fl1').textContent=t.fl1;$('t-fl2').textContent=t.fl2;
+  $('loginBtn').textContent=t.login;$('signupBtn').textContent=t.signup;$('logoutBtn').textContent=t.logout;
+  $('tabLogin').textContent=t.login;$('tabSignup').textContent=t.signup;
+  $('authName').placeholder=t.name;$('authEmail').placeholder=t.email;$('authPass').placeholder=t.pass;
+  $('googleTxt').textContent=t.google;$('orTxt').textContent=t.or;$('forgotBtn').textContent=t.forgot;
+  $('demoNote').textContent=demoMode()?t.demo:'';
+  const ids=['#features','#demo','#pricing','#reviews','#faq','#contact'];
+  $('navlinks').innerHTML=t.navlinks.map((n,i)=>`<a href="${ids[i]}">${n}</a>`).join('');
+  $('featGrid').innerHTML=t.feats.map(f=>`<div class="card"><div class="icon">${f[0]}</div><h3>${f[1]}</h3><p>${f[2]}</p></div>`).join('');
+  $('plansGrid').innerHTML=t.plans.map((p,i)=>`
+    <div class="plan ${p[6]?'featured':''} ${i===2?'gold':''}">
+      ${p[5]?`<div class="tag">${p[5]}</div>`:''}
+      <h3>${p[0]}</h3>
+      <div class="price">${p[1]}<small> ${p[2]}</small></div>
+      <ul>${p[3].map(f=>`<li>${f}</li>`).join('')}</ul>
+      <button class="btn-primary full" onclick="downloadJarvis()">${p[4]}</button>
+    </div>`).join('');
+  $('testiGrid').innerHTML=t.testis.map(x=>`
+    <div class="testi"><div class="stars">★★★★★</div><p>"${x[2]}"</p>
+    <div class="tuser"><div class="tav">${x[0].charAt(0)}</div><div><b>${x[0]}</b><span>${x[1]}</span></div></div></div>`).join('');
+  $('faqList').innerHTML=t.faqs.map((f,i)=>`
+    <div class="faq-item" id="faq${i}">
+      <button class="faq-q" onclick="toggleFaq(${i})">${f[0]}<span>+</span></button>
+      <div class="faq-a"><div>${f[1]}</div></div>
+    </div>`).join('');
+  $('footLinks1').innerHTML=t.flinks1.map((x,i)=>`<a href="${ids[i]||'#'}">${x}</a>`).join('');
+  $('footLinks2').innerHTML=t.flinks2.map(x=>`<a href="#">${x}</a>`).join('');
+  updateAuthTexts();
+}
+
+function toggleFaq(i){document.querySelectorAll('.faq-item').forEach((el,j)=>{if(j!==i)el.classList.remove('open');});$('faq'+i).classList.toggle('open');}
+
+// Contact form — GitHub Pages friendly (localStorage mein save)
+function sendContact(){
+  const t=T[lang];
+  const name=$('cName').value.trim(),email=$('cEmail').value.trim(),msg=$('cMsg').value.trim();
+  if(!name||!email||!msg){toast(t.errFill);return;}
+  const msgs=JSON.parse(localStorage.getItem('jv_contact')||'[]');
+  msgs.push({name:name,email:email,message:msg,at:new Date().toISOString()});
+  localStorage.setItem('jv_contact',JSON.stringify(msgs));
+  $('cName').value='';$('cEmail').value='';$('cMsg').value='';
+  toast(t.cSent);
+}
+
+const termLines=["> Initializing JARVIS core v9.9...","> Loading AI modules........ OK","> Voice engine.............. ONLINE","> Smart tools............... READY","> Security shield........... ACTIVE","","> System ready. Welcome, Boss. ⚡"];
+const term=$('term');let li=0,ci=0,out='';
+(function type(){
+  if(li>=termLines.length){term.innerHTML=out+'<span class="cursor">█</span>';return;}
+  out+=termLines[li][ci]||'';ci++;
+  if(ci>termLines[li].length){out+='\n';li++;ci=0;}
+  term.innerHTML=out.replace(/\n/g,'<br>')+'<span class="cursor">█</span>';
+  setTimeout(type,24);
+})();
+
+document.querySelectorAll('[data-count]').forEach(el=>{
+  const target=+el.dataset.count;let n=0;
+  const step=()=>{n+=Math.ceil(target/60);if(n>=target)n=target;
+    el.textContent=n.toLocaleString()+(target>100?'+':'');if(n<target)requestAnimationFrame(step);};
+  setTimeout(step,500);
+});
+
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');}),{threshold:.12});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+addEventListener('scroll',()=>$('topBtn').classList.toggle('show',scrollY>450));
+
+function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3200);}
+
+let authMode='login';
+function openAuth(m){switchTab(m);$('authModal').classList.add('open');}
+function closeAuth(){$('authModal').classList.remove('open');$('authErr').textContent='';}
+function switchTab(m){authMode=m;$('tabLogin').classList.toggle('active',m==='login');$('tabSignup').classList.toggle('active',m==='signup');updateAuthTexts();}
+function updateAuthTexts(){const t=T[lang];
+  $('nameField').style.display=(authMode==='signup')?'block':'none';
+  $('forgotBtn').style.display=(authMode==='login')?'block':'none';
+  $('authTitle').textContent=(authMode==='login')?t.loginTitle:t.signupTitle;
+  $('authSub').textContent=(authMode==='login')?t.loginSub:t.signupSub;
+  $('authSubmit').textContent=(authMode==='login')?t.login:t.signup;}
+function togglePass(){const p=$('authPass');p.type=(p.type==='password')?'text':'password';}
+function renderAuthUI(){
+  if(currentUser){$('authArea').style.display='none';$('userArea').style.display='flex';
+    $('userName').textContent=currentUser.name;$('avatar').textContent=currentUser.name.charAt(0).toUpperCase();}
+  else{$('authArea').style.display='flex';$('userArea').style.display='none';}
+}
+function mapErr(code){const t=T[lang];
+  if(code==='auth/email-already-in-use')return t.errExists;
+  if(code==='auth/weak-password')return t.errWeak;
+  if(['auth/wrong-password','auth/user-not-found','auth/invalid-credential','auth/invalid-email'].includes(code))return t.errWrong;
+  return t.errGeneral;}
+async function submitAuth(){
+  const t=T[lang],name=$('authName').value.trim(),email=$('authEmail').value.trim(),pass=$('authPass').value;
+  $('authErr').textContent='';
+  if(!email||!pass||(authMode==='signup'&&!name)){$('authErr').textContent=t.errFill;return;}
+  if(!/^\S+@\S+\.\S+$/.test(email)){$('authErr').textContent=t.errEmail;return;}
+  if(pass.length<6){$('authErr').textContent=t.errWeak;return;}
+  $('authSubmit').disabled=true;
+  try{
+    if(firebaseReady){
+      if(authMode==='signup'){
+        const cred=await auth.createUserWithEmailAndPassword(email,pass);
+        await cred.user.updateProfile({displayName:name});
+        currentUser={name,email};renderAuthUI();toast(t.accCreated);
+      }else{await auth.signInWithEmailAndPassword(email,pass);toast(t.loggedIn);}
+    }else{
+      const users=JSON.parse(localStorage.getItem('jv_users')||'{}');
+      if(authMode==='signup'){
+        if(users[email])throw{code:'auth/email-already-in-use'};
+        users[email]={name,pass};localStorage.setItem('jv_users',JSON.stringify(users));
+        currentUser={name,email};toast(t.accCreated);
+      }else{
+        if(!users[email]||users[email].pass!==pass)throw{code:'auth/invalid-credential'};
+        currentUser={name:users[email].name,email};toast(t.loggedIn);
+      }
+      localStorage.setItem('jv_session',JSON.stringify(currentUser));renderAuthUI();
+    }
+    closeAuth();
+    if(pendingDownload){pendingDownload=false;setTimeout(downloadJarvis,400);}
+  }catch(e){$('authErr').textContent=mapErr(e.code);}
+  $('authSubmit').disabled=false;
+}
+async function googleAuth(){
+  if(!firebaseReady){toast(T[lang].demo);return;}
+  try{const p=new firebase.auth.GoogleAuthProvider();await auth.signInWithPopup(p);
+    toast(T[lang].loggedIn);closeAuth();
+    if(pendingDownload){pendingDownload=false;setTimeout(downloadJarvis,400);}
+  }catch(e){toast(mapErr(e.code));}
+}
+async function resetPass(){
+  const t=T[lang],email=$('authEmail').value.trim();
+  if(!email){$('authErr').textContent=t.errEmail;return;}
+  if(!firebaseReady){toast(t.resetDemo);return;}
+  try{await auth.sendPasswordResetEmail(email);toast(t.resetSent);}catch(e){$('authErr').textContent=mapErr(e.code);}
+}
+async function logout(){
+  if(firebaseReady&&auth)await auth.signOut();
+  localStorage.removeItem('jv_session');currentUser=null;renderAuthUI();toast(T[lang].loggedOut);
+}
+
+function downloadJarvis(){
+  const t=T[lang];
+  if(!currentUser){pendingDownload=true;toast(t.needLogin);openAuth('login');return;}
+  const src=$('jarvisAppSource').textContent.trim().replace(/<\\\/script>/g,'<\/script>');
+  const blob=new Blob([src],{type:'text/html'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='JARVIS-UltraProMax.html';a.click();URL.revokeObjectURL(a.href);
+  $('installModal').classList.add('open');$('closeInstBtn').style.display='none';
+  const log=$('instLog'),fill=$('fill');log.innerHTML='';fill.style.width='0%';
+  t.steps.forEach((s,i)=>{setTimeout(()=>{
+    fill.style.width=((i+1)/t.steps.length*100)+'%';
+    log.innerHTML+=(i===t.steps.length-1?'<span class="done">'+s+'</span>':s)+'\n';
+    if(i===t.steps.length-1)$('closeInstBtn').style.display='block';
+  },700*(i+1));});
+}
+function closeInstall(){$('installModal').classList.remove('open');}
+
+setLang('en');renderAuthUI();
+addEventListener('load',()=>setTimeout(()=>$('preloader').classList.add('hide'),1300));
+</script>
+</body>
+</html>
